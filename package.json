@@ -1,0 +1,29 @@
+{
+  "name": "static-jsx-plugin",
+  "version": "0.1.0-alpha.1",
+  "description": "Render JSX to static HTML with webpack",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mfellner/static-jsx-plugin.git"
+  },
+  "keywords": [
+    "webpack",
+    "jsx",
+    "react"
+  ],
+  "author": "Maximilian Fellner",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mfellner/static-jsx-plugin/issues"
+  },
+  "homepage": "https://github.com/mfellner/static-jsx-plugin#readme",
+  "peerDependencies": {
+    "react": "0.13.x",
+    "webpack": "1.x"
+  },
+  "devDependencies": {
+    "eslint": "^1.3.1"
+  }
+}
