@@ -1,4 +1,4 @@
-# Static JSX plugin for webpack [![npm](https://img.shields.io/npm/v/static-jsx-plugin.svg?style=flat-square)](https://www.npmjs.com/package/static-jsx-plugin)
+# Static JSX plugin for webpack [![npm](https://img.shields.io/npm/v/static-jsx-webpack-plugin.svg?style=flat-square)](https://www.npmjs.com/package/static-jsx-webpack-plugin)
 
 Use React JSX as entrypoints in webpack and render them to static HTML!
 
@@ -13,7 +13,7 @@ Inspired by:
 **webpack.config.js**
 
 ```javascript
-var StaticJsxPlugin = require('static-jsx-plugin');
+var StaticJsxPlugin = require('static-jsx-webpack-plugin');
 
 module.exports = {
   target: 'web',
