@@ -1,4 +1,4 @@
-var StaticReactSource = require('./static-react-source');
+var StaticReactSource = require('./lib/StaticReactSource');
 
 /**
  * Plugin to create static HTML from JSX.
