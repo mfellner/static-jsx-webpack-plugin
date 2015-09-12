@@ -9,8 +9,7 @@ const TMP_DIR = path.join(__dirname, 'tmp')
 const FIXTURES_DIR = path.join(__dirname, 'fixtures')
 
 describe('StaticJsxPlugin', () => {
-  var compiler = webpack({
-    entry: path.join(FIXTURES_DIR, 'index.jsx'),
+  const baseConf = {
     output: {
       path: TMP_DIR,
       filename: 'bundle.js'
@@ -21,22 +20,54 @@ describe('StaticJsxPlugin', () => {
         exclude: /node_modules/,
         loader: 'babel',
       }]
-    },
-    plugins: [new StaticJsxPlugin()]
-  })
+    }
+  }
 
   afterEach(done => {
     rimraf(TMP_DIR, done)
   })
 
-  it('should transform JSX to HTML', done => {
-    compiler.run(async function(err, stats) {
+  function getConf(conf) {
+    return Object.assign(baseConf, Object.assign(conf, {
+      plugins: [new StaticJsxPlugin()]
+    }))
+  }
+
+  it('should transform JSX to HTML', function(done) {
+    this.timeout(8000)
+    const conf = getConf({
+      entry: path.join(FIXTURES_DIR, 'index.jsx')
+    })
+    webpack(conf).run(async function(err, stats) {
       try {
         if (err) return done(err)
-        console.log(stats.toString({chunkModules: false}))
+        // console.log(stats.toString({chunkModules: false}))
         const bundle = await fs.readFile(path.join(TMP_DIR, 'bundle.js'))
         const actual = await fs.readFile(path.join(TMP_DIR, 'index.html'))
         const expected = await fs.readFile(path.join(FIXTURES_DIR, 'index.html'))
+        actual.toString().should.equal(expected.toString())
+        done()
+      } catch (e) {
+        return done(e)
+      }
+    })
+  })
+
+  it('should inject externals', done => {
+    const conf = getConf({
+      entry: path.join(FIXTURES_DIR, 'index-externals.jsx'),
+      externals: {
+        'react': 'React',
+        'testmodule': 'TestModule'
+      }
+    })
+    webpack(conf).run(async function(err, stats) {
+      try {
+        if (err) return done(err)
+        // console.log(stats.toString({chunkModules: false}))
+        const bundle = await fs.readFile(path.join(TMP_DIR, 'bundle.js'))
+        const actual = await fs.readFile(path.join(TMP_DIR, 'index.html'))
+        const expected = await fs.readFile(path.join(FIXTURES_DIR, 'index-externals.html'))
         actual.toString().should.equal(expected.toString())
         done()
       } catch (e) {

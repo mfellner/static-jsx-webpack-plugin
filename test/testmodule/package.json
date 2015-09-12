@@ -1,0 +1,7 @@
+{
+  "name": "testmodule",
+  "version": "0.1.0",
+  "description": "Test module",
+  "main": "index.js",
+  "private": true
+}
