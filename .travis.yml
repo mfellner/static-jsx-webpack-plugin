@@ -2,7 +2,7 @@ sudo: false
 language: node_js
 node_js:
   - "iojs"
-before_script:
+before_install:
   - npm install react webpack
 cache:
   directories:
