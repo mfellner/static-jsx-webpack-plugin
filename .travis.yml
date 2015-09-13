@@ -1,0 +1,9 @@
+sudo: false
+language: node_js
+node_js:
+  - "iojs"
+before_script:
+  - npm install react webpack
+cache:
+  directories:
+    - node_modules
