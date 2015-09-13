@@ -33,8 +33,7 @@ describe('StaticJsxPlugin', () => {
     }))
   }
 
-  it('should transform JSX to HTML', function(done) {
-    this.timeout(8000)
+  it('should transform JSX to HTML', done => {
     const conf = getConf({
       entry: path.join(FIXTURES_DIR, 'index.jsx')
     })
