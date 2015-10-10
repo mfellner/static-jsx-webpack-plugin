@@ -1,28 +1,31 @@
+var path = require('path');
 var StaticReactSource = require('./lib/StaticReactSource');
+var StaticReactError = require('./lib/StaticReactError');
 
 /**
  * Plugin to create static HTML from JSX.
  *
- * @param {(string|object)} source|props - Name of the source chunk / Component properties.
- * @param {(string|object)} target|options - Name of the target file / Options.
  * @param {object} [props] - Component properties.
- * @param {object} [options] - Options.
+ * @param {object} [options] - Miscellaneous options.
  */
-function StaticJsxPlugin(source, target, props, options) {
-  this.sourceName = typeof source === 'string' ? source : 'main';
-  this.targetName = typeof target === 'string' ? target : 'index.html';
-  props = props || arguments[0];
-  options = options || arguments[1];
+function StaticJsxPlugin(props, options) {
   this.props = typeof props === 'object' ? props : {};
   this.options = typeof options === 'object' ? options : {};
 }
 
 StaticJsxPlugin.prototype.apply = function(compiler) {
   var self = this;
+  var entry = compiler.options.entry;
+
+  if (typeof entry === 'object' && !Array.isArray(entry)) {
+    entry = Object.getOwnPropertyNames(entry).map(function(p) {
+      return entry[p];
+    })
+  }
 
   // Disable the plugin when hot reloading is active.
   // (Incompatible with some loaders, e.g. react-hot.)
-  if ([].concat(compiler.options.entry).map(function(e) {
+  if ([].concat(entry).map(function(e) {
       return e.indexOf('webpack/hot') !== -1;
     }).reduce(function(prev, curr) {
       return prev || curr;
@@ -35,18 +38,91 @@ StaticJsxPlugin.prototype.apply = function(compiler) {
 
       if (this.errors && this.errors.length) return this.errors;
 
-      var sourceChunk = this.namedChunks[self.sourceName];
+      /**
+       * Create a chunk/output name pair.
+       *
+       * @param  {string} entry - Chunk name or absolute path of the JSX entry.
+       * @param  {string} [output] - Alternative name of the output.
+       * @return {object} Pair of JSX chunk name and HTML output name.
+       */
+      function pair(entry, output) {
+        if (path.isAbsolute(entry) && path.extname(entry) !== '.jsx') {
+          throw new StaticReactError('Not a JSX file: ', entry);
+        }
+        return {
+          chunkName: typeof entry === 'string' ? path.basename(entry, '.jsx') : entry,
+          outputName: path.basename(output || entry, '.jsx') + '.html'
+        }
+      }
 
-      if (!sourceChunk) throw new Error('no such chunk: ' + self.sourceName);
+      function outputName(s) {
+        if (path.extname(s) !== '.jsx') {
+          throw new StaticReactError('Not a JSX file: ', s);
+        }
+        path.basename(s, '.jsx') + '.html'
+      }
 
-      var sourceModule = sourceChunk.origins[0].module;
-      var filePath = this.getPath(self.targetName, {
-        chunk: sourceChunk
-      });
+      /**
+       * Create a list of entry/output pairs.
+       *
+       * @param  {string|Array|object} entries - Entry (entries) of the project.
+       * @return {Array} List of entry/output pairs.
+       */
+      function getPairs(entries) {
+        if (typeof entries === 'string') {
+          // Project has only 1 entry.
+          return [pair('main', entries)]
+        } else if (Array.isArray(entries)) {
+          // TODO: Project has a list of modules.
+          return compilation.modules.filter(function(mod) {
+            return path.extname(mod.resource) === '.jsx'
+          }).
+          map(function(mod) {
+            return {
+              moduleIndex: mod.index,
+              outputName: outputName(mod.resource)
+            }
+          })
+        } else {
+          // Project has a list of named entries.
+          return Object.getOwnPropertyNames(entries).map(function(name) {
+            return pair(name, entries[name])
+          })
+        }
+      }
 
-      this.additionalChunkAssets.push(filePath);
-      this.assets[filePath] = new StaticReactSource(sourceModule, sourceChunk, this, self.props, self.options);
-      sourceChunk.files.push(filePath);
+      getPairs(compilation.compiler.options.entry).map(function(pair) {
+        var chunk, chunkModule;
+
+        if (pair.chunkName) {
+          chunk = compilation.namedChunks[pair.chunkName];
+          if (!chunk) {
+            throw new StaticReactError('No such chunk: ' + pair.chunkName);
+          }
+          chunkModule = chunk.origins[0].module;
+        } else {
+          // TODO: Project has a list of modules.
+          chunk = compilation.namedChunks['main'];
+          if (!chunk) {
+            throw new StaticReactError('No such chunk: main');
+          }
+          chunkModule = compilation.modules[pair.moduleIndex];
+        }
+
+        var filePath = compilation.getPath(pair.outputName, {
+          chunk: chunk
+        });
+        chunk.files.push(filePath);
+
+        return {
+          path: filePath,
+          source: new StaticReactSource(chunkModule, chunk, compilation, self.props, self.options)
+        };
+      }).
+      forEach(function(asset) {
+        compilation.additionalChunkAssets.push(asset.path);
+        compilation.assets[asset.path] = asset.source;
+      })
     });
   });
 }

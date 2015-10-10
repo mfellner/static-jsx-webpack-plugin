@@ -37,8 +37,6 @@ module.exports = {
 
 ```javascript
 new StaticJsxPlugin(
-  'main',       // Name of the entrypoint.
-  'index.html', // Name of the output file.
   {
     title: 'Hello world' // Properties for the React component.
   },
