@@ -9,7 +9,7 @@ const TMP_DIR = path.join(__dirname, 'tmp')
 const FIXTURES_DIR = path.join(__dirname, 'fixtures')
 
 describe('StaticJsxPlugin', () => {
-  const baseConf = {
+  const getBaseConf = () => ({
     output: {
       path: TMP_DIR,
       filename: 'bundle.js'
@@ -21,17 +21,17 @@ describe('StaticJsxPlugin', () => {
         loader: 'babel',
       }]
     }
-  }
-
-  afterEach(done => {
-    rimraf(TMP_DIR, done)
   })
 
-  function getConf(conf) {
-    return Object.assign(baseConf, Object.assign(conf, {
+  const getConf = (conf) => (
+    Object.assign(getBaseConf(), Object.assign(conf, {
       plugins: [new StaticJsxPlugin()]
     }))
-  }
+  )
+
+  afterEach(done =>
+    rimraf(TMP_DIR, done)
+  )
 
   it('should transform JSX to HTML', done => {
     const conf = getConf({
