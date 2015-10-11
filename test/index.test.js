@@ -42,7 +42,7 @@ describe('StaticJsxPlugin', () => {
     rimraf(TMP_DIR, done)
   )
 
-  it('should transform JSX to HTML', done => {
+  it('should transform a JSX entry to HTML', done => {
     const conf = getConf({
       entry: path.join(FIXTURES_DIR, 'index.jsx')
     })
@@ -61,7 +61,7 @@ describe('StaticJsxPlugin', () => {
     })
   })
 
-  it('should transform multiple named entry points', done => {
+  it('should transform multiple named entries', done => {
     const conf = getConf({
       entry: {
         indexOne: path.join(FIXTURES_DIR, 'index.jsx'),
@@ -93,11 +93,11 @@ describe('StaticJsxPlugin', () => {
     })
   })
 
-  it.skip('should transform multiple modules', done => {
+  it('should transform multiple modules', done => {
     const conf = getConf({
       entry: [
-        path.join(FIXTURES_DIR, 'index.jsx'),
-        path.join(FIXTURES_DIR, 'index-two.jsx')
+        path.join(FIXTURES_DIR, 'example.js'),
+        path.join(FIXTURES_DIR, 'index.jsx')
       ],
       output: {
         path: TMP_DIR,
@@ -110,13 +110,9 @@ describe('StaticJsxPlugin', () => {
         // console.log(stats.toString({chunkModules: false}))
         await getFile(TMP_DIR, 'bundle.js').should.finally.not.be.null()
 
-        const expected1 = await fs.readFile(path.join(FIXTURES_DIR, 'html/multi/index.html'))
+        const expected = await fs.readFile(path.join(FIXTURES_DIR, 'html/single/index.html'))
         await getFile(TMP_DIR, 'index.html').should.finally.not.be.null().and.
-        equal(expected1.toString())
-
-        const expected2 = await fs.readFile(path.join(FIXTURES_DIR, 'html/multi/index-two.html'))
-        await getFile(TMP_DIR, 'index-two.html').should.finally.not.be.null().and.
-        equal(expected2.toString())
+        equal(expected.toString())
         done()
       } catch (e) {
         return done(e)

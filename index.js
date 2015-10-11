@@ -55,13 +55,6 @@ StaticJsxPlugin.prototype.apply = function(compiler) {
         }
       }
 
-      function outputName(s) {
-        if (path.extname(s) !== '.jsx') {
-          throw new StaticReactError('Not a JSX file: ', s);
-        }
-        path.basename(s, '.jsx') + '.html'
-      }
-
       /**
        * Create a list of entry/output pairs.
        *
@@ -73,16 +66,17 @@ StaticJsxPlugin.prototype.apply = function(compiler) {
           // Project has only 1 entry.
           return [pair('main', entries)]
         } else if (Array.isArray(entries)) {
-          // TODO: Project has a list of modules.
-          return compilation.modules.filter(function(mod) {
+          // Project has a list of modules.
+          // The last module is the one that will be exported and must be a JSX file.
+          var jsxModules = compilation.modules.filter(function(mod) {
             return path.extname(mod.resource) === '.jsx'
-          }).
-          map(function(mod) {
-            return {
-              moduleIndex: mod.index,
-              outputName: outputName(mod.resource)
-            }
-          })
+          });
+          if (jsxModules.length < 1) {
+            throw new StaticReactError('No JSX module found.')
+          } else if (jsxModules.length > 1) {
+            console.warn('Warning: found more than 1 JSX module.')
+          }
+          return [pair('main', jsxModules[jsxModules.length - 1].resource)];
         } else {
           // Project has a list of named entries.
           return Object.getOwnPropertyNames(entries).map(function(name) {
@@ -92,21 +86,9 @@ StaticJsxPlugin.prototype.apply = function(compiler) {
       }
 
       getPairs(compilation.compiler.options.entry).map(function(pair) {
-        var chunk, chunkModule;
-
-        if (pair.chunkName) {
-          chunk = compilation.namedChunks[pair.chunkName];
-          if (!chunk) {
-            throw new StaticReactError('No such chunk: ' + pair.chunkName);
-          }
-          chunkModule = chunk.origins[0].module;
-        } else {
-          // TODO: Project has a list of modules.
-          chunk = compilation.namedChunks['main'];
-          if (!chunk) {
-            throw new StaticReactError('No such chunk: main');
-          }
-          chunkModule = compilation.modules[pair.moduleIndex];
+        var chunk = compilation.namedChunks[pair.chunkName];
+        if (!chunk) {
+          throw new StaticReactError('No such chunk: ' + pair.chunkName);
         }
 
         var filePath = compilation.getPath(pair.outputName, {
@@ -116,7 +98,7 @@ StaticJsxPlugin.prototype.apply = function(compiler) {
 
         return {
           path: filePath,
-          source: new StaticReactSource(chunkModule, chunk, compilation, self.props, self.options)
+          source: new StaticReactSource(chunk, compilation, self.props, self.options)
         };
       }).
       forEach(function(asset) {
