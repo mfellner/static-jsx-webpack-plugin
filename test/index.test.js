@@ -4,6 +4,7 @@ import rimraf from 'rimraf'
 import should from 'should'
 import shouldPromised from 'should-promised'
 import webpack from 'webpack'
+import CommonsChunkPlugin from 'webpack/lib/optimize/CommonsChunkPlugin'
 import StaticJsxPlugin from '../index.js'
 
 const TMP_DIR = path.join(__dirname, 'tmp')
@@ -17,35 +18,31 @@ function getFile(dir, file) {
   })
 }
 
+const baseConf = {
+  module: {
+    loaders: [{
+      test: /\.(js|jsx)$/,
+      exclude: /node_modules/,
+      loader: 'babel',
+    }]
+  }
+}
+
 describe('StaticJsxPlugin', () => {
-  const getBaseConf = () => ({
-    output: {
-      path: TMP_DIR,
-      filename: 'bundle.js'
-    },
-    module: {
-      loaders: [{
-        test: /\.(js|jsx)$/,
-        exclude: /node_modules/,
-        loader: 'babel',
-      }]
-    }
-  })
-
-  const getConf = (conf) => (
-    Object.assign(getBaseConf(), Object.assign(conf, {
-      plugins: [new StaticJsxPlugin()]
-    }))
-  )
-
   afterEach(done =>
     rimraf(TMP_DIR, done)
   )
 
   it('should transform a JSX entry to HTML', done => {
-    const conf = getConf({
-      entry: path.join(FIXTURES_DIR, 'index.jsx')
-    })
+    const conf = {
+      entry: path.join(FIXTURES_DIR, 'index.jsx'),
+      output: {
+        path: TMP_DIR,
+        filename: 'bundle.js'
+      },
+      module: baseConf.module,
+      plugins: [new StaticJsxPlugin()]
+    }
     webpack(conf).run(async function(err, stats) {
       try {
         if (err) return done(err)
@@ -62,7 +59,7 @@ describe('StaticJsxPlugin', () => {
   })
 
   it('should transform multiple named entries', done => {
-    const conf = getConf({
+    const conf = {
       entry: {
         indexOne: path.join(FIXTURES_DIR, 'index.jsx'),
         indexTwo: path.join(FIXTURES_DIR, 'index-two.jsx')
@@ -71,7 +68,9 @@ describe('StaticJsxPlugin', () => {
         path: TMP_DIR,
         filename: '[name]-chunk.js'
       },
-    })
+      module: baseConf.module,
+      plugins: [new StaticJsxPlugin()]
+    }
     webpack(conf).run(async function(err, stats) {
       try {
         if (err) return done(err)
@@ -94,7 +93,7 @@ describe('StaticJsxPlugin', () => {
   })
 
   it('should transform multiple modules', done => {
-    const conf = getConf({
+    const conf = {
       entry: [
         path.join(FIXTURES_DIR, 'example.js'),
         path.join(FIXTURES_DIR, 'index.jsx')
@@ -103,7 +102,9 @@ describe('StaticJsxPlugin', () => {
         path: TMP_DIR,
         filename: 'bundle.js'
       },
-    })
+      module: baseConf.module,
+      plugins: [new StaticJsxPlugin()]
+    }
     webpack(conf).run(async function(err, stats) {
       try {
         if (err) return done(err)
@@ -121,13 +122,19 @@ describe('StaticJsxPlugin', () => {
   })
 
   it('should inject externals', done => {
-    const conf = getConf({
+    const conf = {
       entry: path.join(FIXTURES_DIR, 'index-externals.jsx'),
+      output: {
+        path: TMP_DIR,
+        filename: 'bundle.js'
+      },
       externals: {
         'react': 'React',
         'testmodule': 'TestModule'
-      }
-    })
+      },
+      module: baseConf.module,
+      plugins: [new StaticJsxPlugin()]
+    }
     webpack(conf).run(async function(err, stats) {
       try {
         if (err) return done(err)
@@ -135,6 +142,39 @@ describe('StaticJsxPlugin', () => {
         await getFile(TMP_DIR, 'bundle.js').should.finally.not.be.null()
         const expected = await fs.readFile(path.join(FIXTURES_DIR, 'html/single/index-externals.html'))
         await getFile(TMP_DIR, 'index-externals.html').should.finally.not.be.null().and.
+        equal(expected.toString())
+        done()
+      } catch (e) {
+        return done(e)
+      }
+    })
+  })
+
+  it.skip('should work with the CommonsChunkPlugin', done => {
+    const conf = {
+      entry: {
+        indexOne: path.join(FIXTURES_DIR, 'index.jsx'),
+        indexTwo: path.join(FIXTURES_DIR, 'index-two.jsx')
+      },
+      output: {
+        path: TMP_DIR,
+        filename: '[name]-chunk.js'
+      },
+      module: baseConf.module,
+      plugins: [
+        new StaticJsxPlugin(),
+        new CommonsChunkPlugin('common-chunk.js')
+      ]
+    }
+    webpack(conf).run(async function(err, stats) {
+      try {
+        if (err) return done(err)
+        console.log(stats.toString({
+          chunkModules: false
+        }))
+        await getFile(TMP_DIR, 'bundle.js').should.finally.not.be.null()
+        const expected = await fs.readFile(path.join(FIXTURES_DIR, 'html/single/index.html'))
+        await getFile(TMP_DIR, 'index.html').should.finally.not.be.null().and.
         equal(expected.toString())
         done()
       } catch (e) {
