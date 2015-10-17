@@ -49,7 +49,7 @@ describe('StaticJsxPlugin', () => {
         if (err) return done(err)
         // console.log(stats.toString({chunkModules: false}))
         await getFile(TMP_DIR, 'bundle.js').should.finally.not.be.null()
-        const expected = await fs.readFile(path.join(FIXTURES_DIR, 'html/single/index.html'))
+        const expected = await fs.readFile(path.join(FIXTURES_DIR, 'index.html'))
         await getFile(TMP_DIR, 'index.html').should.finally.not.be.null().and.
         equal(expected.toString())
         done()
@@ -83,15 +83,17 @@ describe('StaticJsxPlugin', () => {
 
         const dom1 = await domUtil.parseHtml(await getFile(TMP_DIR, 'index.html'))
 
+        should(_(dom1, 'h1')).have.length(1)
         should($($($(dom1, 'main'), 'h1'))).be.exactly('Hello, world')
-        should(_(dom1, 'script')).matchEach(v => (
+        should(_(dom1, 'script')).have.length(1).and.matchEach(v => (
           should(v).have.propertyByPath('attribs', 'src').eql('indexOne-chunk.js')
         ))
 
         const dom2 = await domUtil.parseHtml(await getFile(TMP_DIR, 'index-two.html'))
 
+        should(_(dom2, 'h1')).have.length(1)
         should($($($(dom2, 'main'), 'h1'))).be.exactly('Hello, 2nd world')
-        should(_(dom2, 'script')).matchEach(v => (
+        should(_(dom2, 'script')).have.length(1).and.matchEach(v => (
           should(v).have.propertyByPath('attribs', 'src').eql('indexTwo-chunk.js')
         ))
 
@@ -121,7 +123,7 @@ describe('StaticJsxPlugin', () => {
         // console.log(stats.toString({chunkModules: false}))
         await getFile(TMP_DIR, 'bundle.js').should.finally.not.be.null()
 
-        const expected = await fs.readFile(path.join(FIXTURES_DIR, 'html/single/index.html'))
+        const expected = await fs.readFile(path.join(FIXTURES_DIR, 'index.html'))
         await getFile(TMP_DIR, 'index.html').should.finally.not.be.null().and.
         equal(expected.toString())
         done()
@@ -149,10 +151,12 @@ describe('StaticJsxPlugin', () => {
       try {
         if (err) return done(err)
         // console.log(stats.toString({chunkModules: false}))
-        await getFile(TMP_DIR, 'bundle.js').should.finally.not.be.null()
-        const expected = await fs.readFile(path.join(FIXTURES_DIR, 'html/single/index-externals.html'))
-        await getFile(TMP_DIR, 'index-externals.html').should.finally.not.be.null().and.
-        equal(expected.toString())
+        const $ = domUtil.findFirst, _ = domUtil.findAll
+
+        const dom = await domUtil.parseHtml(await getFile(TMP_DIR, 'index-externals.html'))
+        should(_(dom, 'h1')).have.length(1)
+        should($($($(dom, 'body'), 'h1'))).be.exactly('foobar')
+
         done()
       } catch (e) {
         return done(e)
@@ -183,7 +187,7 @@ describe('StaticJsxPlugin', () => {
           chunkModules: false
         }))
         await getFile(TMP_DIR, 'bundle.js').should.finally.not.be.null()
-        const expected = await fs.readFile(path.join(FIXTURES_DIR, 'html/single/index.html'))
+        const expected = await fs.readFile(path.join(FIXTURES_DIR, 'index.html'))
         await getFile(TMP_DIR, 'index.html').should.finally.not.be.null().and.
         equal(expected.toString())
         done()
