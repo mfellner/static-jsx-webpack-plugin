@@ -5,7 +5,8 @@ import should from 'should'
 import shouldPromised from 'should-promised'
 import webpack from 'webpack'
 import CommonsChunkPlugin from 'webpack/lib/optimize/CommonsChunkPlugin'
-import StaticJsxPlugin from '../index.js'
+import StaticJsxPlugin from '../index'
+import * as domUtil from './util/dom'
 
 const TMP_DIR = path.join(__dirname, 'tmp')
 const FIXTURES_DIR = path.join(__dirname, 'fixtures')
@@ -75,16 +76,25 @@ describe('StaticJsxPlugin', () => {
       try {
         if (err) return done(err)
         // console.log(stats.toString({chunkModules: false}))
+        const $ = domUtil.findFirst, _ = domUtil.findAll
+
         await getFile(TMP_DIR, 'indexOne-chunk.js').should.finally.not.be.null()
         await getFile(TMP_DIR, 'indexTwo-chunk.js').should.finally.not.be.null()
 
-        const expected1 = await fs.readFile(path.join(FIXTURES_DIR, 'html/named/index.html'))
-        await getFile(TMP_DIR, 'index.html').should.finally.not.be.null().and.
-        equal(expected1.toString())
+        const dom1 = await domUtil.parseHtml(await getFile(TMP_DIR, 'index.html'))
 
-        const expected2 = await fs.readFile(path.join(FIXTURES_DIR, 'html/named/index-two.html'))
-        await getFile(TMP_DIR, 'index-two.html').should.finally.not.be.null().and.
-        equal(expected2.toString())
+        should($($($(dom1, 'main'), 'h1'))).be.exactly('Hello, world')
+        should(_(dom1, 'script')).matchEach(v => (
+          should(v).have.propertyByPath('attribs', 'src').eql('indexOne-chunk.js')
+        ))
+
+        const dom2 = await domUtil.parseHtml(await getFile(TMP_DIR, 'index-two.html'))
+
+        should($($($(dom2, 'main'), 'h1'))).be.exactly('Hello, 2nd world')
+        should(_(dom2, 'script')).matchEach(v => (
+          should(v).have.propertyByPath('attribs', 'src').eql('indexTwo-chunk.js')
+        ))
+
         done()
       } catch (e) {
         return done(e)
