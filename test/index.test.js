@@ -18,7 +18,7 @@ const FIXTURES_DIR = path.join(__dirname, 'fixtures')
 function getFile(dir, file) {
   return new Promise(function(resolve, reject) {
     fs.readFile(path.join(dir, file)).
-    then(data => resolve(data.toString())).
+    then(data => resolve(data.toString().trim())).
     catch(err => reject(err))
   })
 }
