@@ -30,14 +30,15 @@
     "babel-core": "^5.8.24",
     "babel-eslint": "^4.1.1",
     "babel-loader": "^5.3.2",
+    "chai": "^3.3.0",
+    "chai-fs": "git+https://github.com/bitnami/chai-fs.git",
+    "chai-things": "^0.2.0",
     "domhandler": "^2.3.0",
     "eslint": "^1.4.1",
     "htmlparser2": "^3.8.3",
     "mocha": "^2.3.2",
     "mz": "^2.0.0",
     "rimraf": "^2.4.3",
-    "should": "^7.1.0",
-    "should-promised": "^0.3.1",
     "testmodule": "./test/testmodule"
   }
 }
