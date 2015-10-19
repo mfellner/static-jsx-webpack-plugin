@@ -1,0 +1,18 @@
+{
+  "name": "static-jsx-webpack-plugin-example",
+  "version": "1.0.0",
+  "main": "index.jsx",
+  "private": true,
+  "scripts": {
+    "serve": "webpack-dev-server --no-info --content-base ./dist",
+    "clean": "rm -r dist/"
+  },
+  "devDependencies": {
+    "react": "0.14.0",
+    "react-addons-update": "^0.14.0",
+    "react-dom": "0.14.0",
+    "static-jsx-webpack-plugin": "../",
+    "webpack": "1.12.2",
+    "webpack-dev-server": "1.12.1"
+  }
+}
