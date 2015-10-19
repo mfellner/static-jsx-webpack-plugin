@@ -14,8 +14,11 @@ module.exports = {
     }]
   },
   plugins: [new StaticJsxPlugin({
+    // These are the props that will be passed into the index.jsx component.
+    title: 'My little example',
     scripts: [
-      // some additional scripts
+      // Here you can add some additional scripts (e.g. externals).
+      // The output chunk file (bundle.js) will be added by the plugin.
     ],
     styles: [
       'https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css'
