@@ -40,5 +40,8 @@
     "mz": "2.x",
     "rimraf": "2.x",
     "testmodule": "./test/testmodule"
+  },
+  "dependencies": {
+    "react-dom": "0.14.x"
   }
 }
