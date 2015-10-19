@@ -4,7 +4,7 @@ import content from './content.jsx'
 
 const Content = React.createFactory(content)
 
-class Index extends React.Component {
+export default class Index extends React.Component {
   render() {
     return (
       <html lang="en">
@@ -29,7 +29,7 @@ class Index extends React.Component {
 
 // If we're running in the browser, mount the root component.
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
-  ReactDOM.render(Content(), document.getElementById('main'));
+  ReactDOM.render(Content(), document.getElementById('main'))
 }
 
 Index.propTypes = {
@@ -42,5 +42,3 @@ Index.defaultProps = {
   styles: [],
   scripts: []
 }
-
-export default Index
