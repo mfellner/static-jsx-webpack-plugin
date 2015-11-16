@@ -3,3 +3,4 @@ example
 .gitignore
 .travis.yml
 .nvmrc
+.babelrc

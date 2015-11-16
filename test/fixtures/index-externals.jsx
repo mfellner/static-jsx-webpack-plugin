@@ -1,7 +1,7 @@
 import React from 'react'           // external
 import TestModule from 'testmodule' // external
 
-class Index extends React.Component {
+export default class Index extends React.Component {
   render() {
     const test = new TestModule('foo')
     return (
@@ -13,5 +13,3 @@ class Index extends React.Component {
     )
   }
 }
-
-export default Index

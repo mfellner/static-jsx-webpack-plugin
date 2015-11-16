@@ -1,6 +1,6 @@
 import React from 'react'
 
-class Index extends React.Component {
+export default class Index extends React.Component {
   render() {
     return (
       <html lang="en">
@@ -33,5 +33,3 @@ Index.defaultProps = {
   styles: [],
   scripts: []
 }
-
-export default Index

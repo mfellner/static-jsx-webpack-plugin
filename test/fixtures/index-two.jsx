@@ -1,6 +1,6 @@
 import React from 'react'
 
-class IndexTwo extends React.Component {
+export default class IndexTwo extends React.Component {
   render() {
     return (
       <html lang="en">
@@ -32,5 +32,3 @@ IndexTwo.defaultProps = {
   styles: [],
   scripts: []
 }
-
-export default IndexTwo

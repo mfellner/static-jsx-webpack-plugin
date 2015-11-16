@@ -11,6 +11,9 @@ import chai from 'chai'
 chai.use(require('chai-fs'))
 chai.use(require('chai-things'))
 
+// use polyfill for async/regenerator
+require('babel-polyfill')
+
 const expect = chai.expect
 const TMP_DIR = path.join(__dirname, 'tmp')
 const FIXTURES_DIR = path.join(__dirname, 'fixtures')
@@ -28,7 +31,7 @@ const baseConf = {
     loaders: [{
       test: /\.(js|jsx)$/,
       exclude: /node_modules/,
-      loader: 'babel',
+      loader: 'babel' // rely on .babelrc
     }]
   }
 }
