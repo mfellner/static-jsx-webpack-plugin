@@ -1,5 +1,4 @@
 import htmlparser from 'htmlparser2'
-import hash from './hash'
 
 function dataPropOrObj(obj) {
   if (typeof obj === 'object' && obj.hasOwnProperty('data')) {
