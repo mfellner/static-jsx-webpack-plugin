@@ -1,5 +1,8 @@
 import React from 'react'
 
+/**
+ * Another basic React class with styles and scripts properties.
+ */
 export default class IndexTwo extends React.Component {
   render() {
     return (

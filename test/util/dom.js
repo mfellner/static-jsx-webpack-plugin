@@ -1,13 +1,29 @@
 import htmlparser from 'htmlparser2'
 
+/**
+ * Given an object, return its 'data' property
+ * or otherwise the unchanged input itself.
+ *
+ * @param  {*} [obj] - Input object.
+ * @return {*} The input's 'data' property or the input itself.
+ */
 function dataPropOrObj(obj) {
   if (typeof obj === 'object' && obj.hasOwnProperty('data')) {
     return obj.data
   } else {
-    return data
+    return obj
   }
 }
 
+/**
+ * Given an array, return the 'data' property of its
+ * first element or just the first element.
+ * Otherwise, return the 'data' property of the input
+ * argument or the unchanged input itse.
+ *
+ * @param  {*} [obj] - Input object.
+ * @return {*}
+ */
 function firstChildOrObj(obj) {
   if (Array.isArray(obj.children)) {
     return dataPropOrObj(obj.children[0])
@@ -16,12 +32,22 @@ function firstChildOrObj(obj) {
   }
 }
 
+/**
+ * For a given sring, create a test function. If a function
+ * or nothing is passed, return the input argument unchanged.
+ *
+ * @param  {string|function} [test] - If string: used inside the test function.
+ * @return {string|function|undefined}
+ */
 function getTestFn(test) {
   switch (typeof test) {
     case 'string':
       return (v) => v.name === test
-    default:
+    case 'function':
+    case 'undefined':
       return test
+    default:
+      throw new Error('invalid type ' + typeof test)
   }
 }
 
